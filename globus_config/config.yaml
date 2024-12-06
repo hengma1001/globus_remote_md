@@ -1,0 +1,34 @@
+display_name: Polaris@ALCF
+
+engine:
+  type: GlobusComputeEngine
+  max_workers_per_node: 4
+
+  # Un-comment to give each worker exclusive access to a single GPU
+  available_accelerators: 4
+
+  provider:
+    type: PBSProProvider
+
+    launcher:
+      type: MpiExecLauncher
+      # Ensures 1 manger per node, work on all 64 cores
+      bind_cmd: --cpu-bind
+      overrides: --depth=64 --ppn 1
+
+    account: FoundEpidem
+    queue: debug
+    cpus_per_node: 32
+    select_options: ngpus=4
+
+    # e.g., "#PBS -l filesystems=home:grand:eagle\n#PBS -k doe"
+    scheduler_options: "#PBS -l filesystems=home:grand:eagle"
+
+    # Node setup: activate necessary conda environment and such
+    worker_init: "module use /soft/modulefiles; module load conda; conda activate globus-compute-12-05"
+
+    walltime: 01:00:00
+    nodes_per_block: 1
+    init_blocks: 0
+    min_blocks: 0
+    max_blocks: 2

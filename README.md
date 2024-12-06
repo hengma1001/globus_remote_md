@@ -1,6 +1,75 @@
-# Python Project Template
+# Globus Remote MD
 
-This project is a template for creating Python projects that follows the Python Standards declared in PEP 621. It uses a pyproject.yaml file to configure the project and Flit to simplify the build process and publish to PyPI. Flit simplifies the build and packaging process for Python projects by eliminating the need for separate setup.py and setup.cfg files. With Flit, you can manage all relevant configurations within the pyproject.toml file, streamlining development and promoting maintainability by centralizing project metadata, dependencies, and build specifications in one place.
+## Set up
+Both the local and remote systems need to be configured to have globus endpoint.
+
+### Polaris (Remote)
+```bash
+qsub -I -l select=1 -l filesystems=home:eagle -l walltime=1:00:00 -q debug -A FoundEpidem
+
+# Note: When you select the Python version, it needs to be the same version as you plan on running locally
+module use /soft/modulefiles; module load conda
+conda create -n globus-compute-12-05 python=3.12 -y
+conda activate globus-compute-12-05
+
+# Install dependencies
+pip install globus-compute-endpoint
+
+# Here you would install any other dependencies you applications depend on
+# conda install ...
+# pip install ...
+```
+
+```bash
+# You should now exit the compute node (ctrl-D)
+
+# Reactivate the environment on the login node
+module use /soft/modulefiles; module load conda
+conda activate globus-compute-12-05
+```
+
+```bash
+# Setup the globus compute endpoint
+globus-compute-endpoint configure globus-compute-12-05
+
+# Setup the endpoint configuration (copy the contents below into the file).
+# Make sure to update the "account" and "worker_init" fields if they differ
+# for your setup.
+cp globus_config/config.yaml ~/.globus_compute/globus-compute-12-05/config.yaml
+
+```
+
+```bash
+# Start the globus compute endpoint
+globus-compute-endpoint start globus-compute-12-05
+
+# This will prompt you with a link to authenticate your globus compute account
+# (You will need to make a Globus account if you have not already)
+
+# On success, it should return:
+Starting endpoint; registered ID: <UUID>
+
+# The endpoint UUID allows you to submit work to the endpoint from anywhere
+
+# To list the UUID again, run this command:
+globus-compute-endpoint list
+
+# To stop the endpoint:
+globus-compute-endpoint stop globus-compute-12-05
+```
+
+### Local Computer
+```bash
+# To run a function from your local computer that places a job on Polaris
+
+# Create a virtual environment and install globus compute
+pip install globus-compute-sdk
+
+# NOTE: MAKE SURE YOUR PYTHON VERSION IS THE SAME ON POLARIS AND YOUR LOCAL COMPUTER
+# Then run the example program:
+python globus_compute_example.py
+```
+
 
 ## Project Organization
 
